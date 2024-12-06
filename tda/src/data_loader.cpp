@@ -9,7 +9,7 @@ namespace fs = std::filesystem;
 DataLoader::DataLoader(const std::string& base_directory) 
     : base_directory_(base_directory) {}
 
-std::vector<std::vector<RunData>> DataLoader::loadAllMissions() {
+std::pair<std::vector<std::vector<RunData>>, std::vector<std::string>> DataLoader::loadAllMissions() {
     std::string cache_file = getBinaryFilePath();
     
     // Try to load from cache first
@@ -18,7 +18,7 @@ std::vector<std::vector<RunData>> DataLoader::loadAllMissions() {
         auto cached_data = loadFromFile(cache_file);
         if (!cached_data.empty()) {
             std::cout << "Successfully loaded cached data" << std::endl;
-            return cached_data;
+            return {cached_data, {}};
         }
     }
 
@@ -29,7 +29,7 @@ std::vector<std::vector<RunData>> DataLoader::loadAllMissions() {
 
     if (!readBestFSMs(missions, best_fsms)) {
         std::cerr << "Failed to read best FSMs" << std::endl;
-        return all_mission_data;
+        return {all_mission_data, missions};
     }
 
     // Process each mission
@@ -62,7 +62,7 @@ std::vector<std::vector<RunData>> DataLoader::loadAllMissions() {
         }
     }
 
-    return all_mission_data;
+    return {all_mission_data, missions};
 }
 
 bool DataLoader::saveToFile(const std::vector<std::vector<RunData>>& data, 
