@@ -1,0 +1,47 @@
+#!/bin/bash
+###############################################################################
+# This script tunes the Finite State Machine inside the AutoMoDe software.
+###############################################################################
+# Path to the AutoMoDe executable
+EXE="/home/ndinga/master/AutoMoDe/bin/automode_main"
+
+# Parameters from irace
+CONFIG_ID="$1"
+INSTANCE_ID="$2"
+SEED="$3"
+INSTANCE="$4"
+shift 4 || exit 1
+CONFIG_PARAMS=$*
+
+# Create unique paths with process ID for parallelization safety
+RUN_ID="${CONFIG_ID}_${INSTANCE_ID}_${SEED}_$$"
+TEMP_FOLDER="temp-files/${RUN_ID}"
+LOG_FOLDER="execution-logs/${RUN_ID}"
+
+# Create directories
+mkdir -p "${TEMP_FOLDER}" "${LOG_FOLDER}" || exit 1
+
+# Define files
+TEMP_ARGOS="${TEMP_FOLDER}/experiment_${SEED}.argos"
+LOG_FILE="${LOG_FOLDER}/execution_${SEED}.csv"
+
+# Prepare .argos file
+sed -e "s|log_filename=\"[^\"]*\"|log_filename=\"${LOG_FILE}\"|g" \
+    -e "s|noise_level=\"[^\"]*\"|noise_level=\"0.05\"|g" \
+    -e "s|loss_probability=\"[^\"]*\"|loss_probability=\"0.85\"|g" \
+    -e "s|noise_std_dev=\"[^\"]*\"|noise_std_dev=\"0.05\"|g" \
+    -e "s|fsm-config=\"[^\"]*\"|fsm-config=\"${CONFIG_PARAMS}\"|g" \
+    "${INSTANCE}" > "${TEMP_ARGOS}"
+
+# Run AutoMoDe and extract score directly
+SCORE=$("${EXE}" -c "${TEMP_ARGOS}" --seed "${SEED}" --fsm-config ${CONFIG_PARAMS} 2>&1 | grep -o -E 'Score [-+0-9.e]+' | tail -n 1 | awk '{print $2}')
+
+# Validate score
+if [[ "$SCORE" =~ ^[-+0-9.e]+$ ]]; then
+    echo "$SCORE"
+    #rm -rf "${TEMP_FOLDER}" "${LOG_FOLDER}"
+    exit 0
+else
+    rm -rf "${TEMP_FOLDER}" "${LOG_FOLDER}"
+    exit 1
+fi

@@ -1,0 +1,33 @@
+###################################################### -*- mode: r -*- #####
+## Scenario setup for Iterated Race (iRace).
+############################################################################
+## File that contains the description of the parameters.
+parameterFile = "./new_grammar.txt"
+## File that contains the options for parameter dependencies
+dependencyFile = "./depend_config.txt"
+## Directory where the programs will be run.
+execDir = "./execution-folder"
+## Directory where tuning instances are located
+trainInstancesDir = "./experiments-folder"
+
+## Configuration du mode itératif avec réinitialisation
+elitist = 1
+#sequential = TRUE        # Active le mode séquentiel
+#testIterationFactor = 1.5  # Facteur d'augmentation des tests entre itérations
+#interferenceType = "none"   # Pas d'interférence entre les configurations
+
+## The maximum total budget for the runs of targetRunner
+maxExperiments = 200
+## Parallel execution
+parallel = 20
+## Decimal places for real parameters
+digits = 4
+## Number of iterations
+nbIterations = 2
+## Statistical test settings
+testType = "t-test"           
+confidence = 0.95             
+## File to save tuning results
+logFile = "./irace.Rdata"     
+############################################################################
+
